@@ -1,25 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="https://js.arcgis.com/4.0/esri/css/main.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title></title>
     <style>
-        html,
-        body {
-            padding: 0;
-            margin: 0;
-            height: 100%;
-            width: 100%;
-        }
-
-        #map-div {
-            height: 100%;
-            width: 100%;
-        }
+        html, body, #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
     </style>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.1/esri/css/main.css">
+    <script src="https://js.arcgis.com/4.1/"></script>
+
+    <script>
+    require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/MapImageLayer",
+        "dojo/domReady!"
+    ], function(Map, MapView, MapImageLayer) {
+
+        var operatorKid = location.search.substr(14);
+
+        var leasesLayer = new MapImageLayer( {
+            url: "http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer",
+            visible: true,
+            sublayers: [ {
+                id: 0,
+                definitionExpression: "operator_kid = " + operatorKid
+            } ]
+        } );
+
+      var map = new Map( {
+          basemap: "topo",
+          layers: [leasesLayer]
+      } );
+
+      var view = new MapView( {
+          container: "viewDiv",
+          map: map,
+          zoom: 7,
+          center: [-98, 38]
+      } );
+    } );
+    </script>
 </head>
+
 <body>
-    <div id="map-div"></div>
-    <script src="https://js.arcgis.com/4.0/"></script>
-    <script src="main.js"></script>
+    <div id="viewDiv"></div>
 </body>
+
 </html>
