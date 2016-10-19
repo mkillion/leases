@@ -79,13 +79,13 @@
         identifyTask.execute(identifyParams).then(function(response) {
             return addPopupTemplate(response.results);
         } ).then(function(feature) {
-            // dom.byId("mapDiv").style.cursor = "auto";
+            view.popup.location = event.mapPoint;
     		view.popup.features = feature;
-    		view.popup.dockEnabled = true;
-    		view.popup.dockOptions = {
-    			buttonEnabled: false,
-    			position: "bottom-right"
-    		};
+    		// view.popup.dockEnabled = true;
+    		// view.popup.dockOptions = {
+    		// 	buttonEnabled: false,
+    		// 	position: "bottom-right"
+    		// };
     		view.popup.visible = true;
         } );
     }
@@ -96,7 +96,7 @@
             var leasesTemplate = new PopupTemplate( {
                 title: "<span class='pu-title'>Lease: {LEASE_NAME}</span>",
                 // content: wellContent(feature)
-                content: "foo: {PRODUCES_GAS}"
+                content: "Produces Gas: {PRODUCES_GAS}<br>Produces Oil: {PRODUCES_OIL}<br>Producing Formation: {PRODUCING_FORMATION}"
             } );
             feature.popupTemplate = leasesTemplate;
 			return feature;
