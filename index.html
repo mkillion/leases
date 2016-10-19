@@ -20,31 +20,89 @@
         "esri/Map",
         "esri/views/MapView",
         "esri/layers/MapImageLayer",
+        "esri/layers/TileLayer",
+        "esri/widgets/Home",
+        "esri/tasks/IdentifyTask",
+        "esri/tasks/support/IdentifyParameters",
+        "dojo/_base/array",
+        "esri/PopupTemplate",
         "dojo/domReady!"
-    ], function(Map, MapView, MapImageLayer) {
+    ], function(Map, MapView, MapImageLayer, TileLayer, Home, IdentifyTask, IdentifyParameters, arrayUtils, PopupTemplate) {
 
-        var operatorKid = location.search.substr(14);
+    var operatorKid = location.search.substr(14);
 
-        var leasesLayer = new MapImageLayer( {
-            url: "http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer",
-            visible: true,
-            sublayers: [ {
-                id: 0,
-                definitionExpression: "operator_kid = " + operatorKid
-            } ]
+    var leasesLayer = new MapImageLayer( {
+        url: "http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer",
+        visible: true,
+        sublayers: [ {
+            id: 0,
+            definitionExpression: "operator_kid = " + operatorKid
+        } ]
+    } );
+    var plssLayer = new TileLayer( {url: "http://services.kgs.ku.edu/arcgis8/rest/services/plss/plss/MapServer"} );
+
+    var map = new Map( {
+        basemap: "topo",
+        layers: [plssLayer, leasesLayer]
+    } );
+
+    var view = new MapView( {
+        container: "viewDiv",
+        map: map,
+        zoom: 7,
+        center: [-98, 38]
+    } );
+
+    view.on("click", executeIdTask);
+
+    var homeBtn = new Home({
+        view: view
+    } );
+    homeBtn.startup();
+    view.ui.add(homeBtn, {
+        position: "top-left",
+        index: 1
+    } );
+
+    function executeIdTask(event) {
+        var identifyTask = new IdentifyTask("http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer");
+        var identifyParams = new IdentifyParameters();
+    	identifyParams.returnGeometry = true;
+        identifyParams.tolerance = 4;
+        identifyParams.layerIds = [0];
+        identifyParams.layerOption = "visible";
+        identifyParams.width = view.width;
+        identifyParams.height = view.height;
+        identifyParams.geometry = event.mapPoint;
+        identifyParams.mapExtent = view.extent;
+
+        identifyTask.execute(identifyParams).then(function(response) {
+            return addPopupTemplate(response.results);
+        } ).then(function(feature) {
+            // dom.byId("mapDiv").style.cursor = "auto";
+    		view.popup.features = feature;
+    		view.popup.dockEnabled = true;
+    		view.popup.dockOptions = {
+    			buttonEnabled: false,
+    			position: "bottom-right"
+    		};
+    		view.popup.visible = true;
         } );
+    }
 
-      var map = new Map( {
-          basemap: "topo",
-          layers: [leasesLayer]
-      } );
+    function addPopupTemplate(response) {
+		return arrayUtils.map(response, function(result) {
+			var feature = result.feature;
+            var leasesTemplate = new PopupTemplate( {
+                title: "<span class='pu-title'>Lease: {LEASE_NAME}</span>",
+                // content: wellContent(feature)
+                content: "foo: {PRODUCES_GAS}"
+            } );
+            feature.popupTemplate = leasesTemplate;
+			return feature;
+		} );
+	}
 
-      var view = new MapView( {
-          container: "viewDiv",
-          map: map,
-          zoom: 7,
-          center: [-98, 38]
-      } );
     } );
     </script>
 </head>
