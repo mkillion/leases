@@ -12,8 +12,9 @@
         width: 100%;
       }
     </style>
-    <link rel="stylesheet" href="https://js.arcgis.com/4.1/esri/css/main.css">
+
     <script src="https://js.arcgis.com/4.1/"></script>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.1/esri/css/main.css">
 
     <script>
     require([
@@ -79,25 +80,30 @@
         identifyTask.execute(identifyParams).then(function(response) {
             return addPopupTemplate(response.results);
         } ).then(function(feature) {
-            view.popup.location = event.mapPoint;
-    		view.popup.features = feature;
-    		// view.popup.dockEnabled = true;
-    		// view.popup.dockOptions = {
-    		// 	buttonEnabled: false,
-    		// 	position: "bottom-right"
-    		// };
-    		view.popup.visible = true;
+            if (feature.length > 0) {
+                view.popup.location = event.mapPoint;
+        		view.popup.features = feature;
+        		// view.popup.dockEnabled = true;
+        		// view.popup.dockOptions = {
+        		// 	buttonEnabled: false,
+        		// 	position: "bottom-right"
+        		// };
+        		view.popup.visible = true;
+            }
         } );
     }
 
     function addPopupTemplate(response) {
 		return arrayUtils.map(response, function(result) {
 			var feature = result.feature;
+
+            var pf = (feature.attributes.PRODUCING_FORMATION === "Null") ? "" : feature.attributes.PRODUCING_FORMATION;
+
             var leasesTemplate = new PopupTemplate( {
-                title: "<span class='pu-title'>Lease: {LEASE_NAME}</span>",
-                // content: wellContent(feature)
-                content: "Produces Gas: {PRODUCES_GAS}<br>Produces Oil: {PRODUCES_OIL}<br>Producing Formation: {PRODUCING_FORMATION}"
+                title: "Lease: {LEASE_NAME}",
+                content: "{KID}<br>Field: {FIELD_NAME}<br>Produces Gas: {PRODUCES_GAS}<br>Produces Oil: {PRODUCES_OIL}<br>Producing Formation: " + pf
             } );
+
             feature.popupTemplate = leasesTemplate;
 			return feature;
 		} );
