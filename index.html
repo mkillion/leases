@@ -69,7 +69,7 @@
         var identifyTask = new IdentifyTask("http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer");
         var identifyParams = new IdentifyParameters();
     	identifyParams.returnGeometry = true;
-        identifyParams.tolerance = 4;
+        identifyParams.tolerance = 3;
         identifyParams.layerIds = [0];
         identifyParams.layerOption = "visible";
         identifyParams.width = view.width;
@@ -80,9 +80,18 @@
         identifyTask.execute(identifyParams).then(function(response) {
             return addPopupTemplate(response.results);
         } ).then(function(feature) {
+            // NOTE: filteredFeature is a hack to prevent features that are not part of the sublayer's definitionExpression from being ID'd and appearing in the popup.
+            // In other apps I use identifyParams.layerDefinitions to prevent filtered features from being ID'd in the first place, but this doesn't seem to be a part
+            // of the 4.1 API.
+            // TODO: investigate further.
+            console.log(feature);
+            var filteredFeature = feature.filter(function(el) {
+                return el.attributes.OPERATOR_KID === operatorKid
+            } );
+            console.log(filteredFeature);
             if (feature.length > 0) {
                 view.popup.location = event.mapPoint;
-        		view.popup.features = feature;
+        		view.popup.features = filteredFeature;
         		// view.popup.dockEnabled = true;
         		// view.popup.dockOptions = {
         		// 	buttonEnabled: false,
@@ -104,7 +113,7 @@
 
             var leasesTemplate = new PopupTemplate( {
                 title: "Lease: {LEASE_NAME}",
-                content: "{KID}<br>Field: " + fn + "<br>Produces Gas: " + pg + "<br>Produces Oil: " + po + "<br>Producing Formation: " + pf
+                content: "op: {OPERATOR_KID}<br>Field: " + fn + "<br>Produces Gas: " + pg + "<br>Produces Oil: " + po + "<br>Producing Formation: " + pf
             } );
 
             feature.popupTemplate = leasesTemplate;
