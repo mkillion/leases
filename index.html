@@ -97,11 +97,14 @@
 		return arrayUtils.map(response, function(result) {
 			var feature = result.feature;
 
+            var fn = (feature.attributes.FIELD_NAME === "Null") ? "" : feature.attributes.FIELD_NAME;
+            var pg = (feature.attributes.PRODUCES_GAS === "Null") ? "" : feature.attributes.PRODUCES_GAS;
+            var po = (feature.attributes.PRODUCES_OIL === "Null") ? "" : feature.attributes.PRODUCES_OIL;
             var pf = (feature.attributes.PRODUCING_FORMATION === "Null") ? "" : feature.attributes.PRODUCING_FORMATION;
 
             var leasesTemplate = new PopupTemplate( {
                 title: "Lease: {LEASE_NAME}",
-                content: "{KID}<br>Field: {FIELD_NAME}<br>Produces Gas: {PRODUCES_GAS}<br>Produces Oil: {PRODUCES_OIL}<br>Producing Formation: " + pf
+                content: "{KID}<br>Field: " + fn + "<br>Produces Gas: " + pg + "<br>Produces Oil: " + po + "<br>Producing Formation: " + pf
             } );
 
             feature.popupTemplate = leasesTemplate;
