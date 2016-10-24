@@ -30,14 +30,20 @@
         "dojo/domReady!"
     ], function(Map, MapView, MapImageLayer, TileLayer, Home, IdentifyTask, IdentifyParameters, arrayUtils, PopupTemplate) {
 
-    var operatorKid = location.search.substr(14);
+    var urlParams = location.search.substr(1).split("&");
+    var operatorKid = urlParams[0].substr(13);
+    var defExp = "operator_kid = " + operatorKid;
+    if (urlParams.length > 1) {
+        var year = urlParams[1].substr(5);
+        defExp = "kid in (select lease_kid from NOMENCLATURE.LEASES_PRODUCTION where operator_kid = " + operatorKid + " and year = " + year + ") and operator_kid = " + operatorKid
+    }
 
     var leasesLayer = new MapImageLayer( {
         url: "http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer",
         visible: true,
         sublayers: [ {
             id: 0,
-            definitionExpression: "operator_kid = " + operatorKid
+            definitionExpression: defExp
         } ]
     } );
     var plssLayer = new TileLayer( {url: "http://services.kgs.ku.edu/arcgis8/rest/services/plss/plss/MapServer"} );
@@ -84,11 +90,10 @@
             // In other apps I use identifyParams.layerDefinitions to prevent filtered features from being ID'd in the first place, but this doesn't seem to be a part
             // of the 4.1 API.
             // TODO: investigate further.
-            console.log(feature);
             var filteredFeature = feature.filter(function(el) {
                 return el.attributes.OPERATOR_KID === operatorKid
             } );
-            console.log(filteredFeature);
+
             if (feature.length > 0) {
                 view.popup.location = event.mapPoint;
         		view.popup.features = filteredFeature;
@@ -113,7 +118,7 @@
 
             var leasesTemplate = new PopupTemplate( {
                 title: "Lease: {LEASE_NAME}",
-                content: "op: {OPERATOR_KID}<br>Field: " + fn + "<br>Produces Gas: " + pg + "<br>Produces Oil: " + po + "<br>Producing Formation: " + pf
+                content: "lease_kid: {LEASE_KID}<br><b>Field:</b> " + fn + "<br><b>Produces Gas:</b> " + pg + "<br><b>Produces Oil:</b> " + po + "<br><b>Producing Formation:</b> " + pf
             } );
 
             feature.popupTemplate = leasesTemplate;
