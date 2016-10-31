@@ -38,15 +38,18 @@
         defExp = "kid in (select lease_kid from NOMENCLATURE.LEASES_PRODUCTION where operator_kid = " + operatorKid + " and year = " + year + ") and operator_kid = " + operatorKid
     }
 
+    // var idDef = [];
+    // idDef = defExp;
+
     var leasesLayer = new MapImageLayer( {
-        url: "http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer",
+        url: "http://services.kgs.ku.edu/arcgis2/rest/services/oilgas/leases/MapServer",
         visible: true,
         sublayers: [ {
             id: 0,
             definitionExpression: defExp
         } ]
     } );
-    var plssLayer = new TileLayer( {url: "http://services.kgs.ku.edu/arcgis8/rest/services/plss/plss/MapServer"} );
+    var plssLayer = new TileLayer( {url: "http://services.kgs.ku.edu/arcgis2/rest/services/plss/plss/MapServer"} );
 
     var map = new Map( {
         basemap: "topo",
@@ -72,7 +75,7 @@
     } );
 
     function executeIdTask(event) {
-        var identifyTask = new IdentifyTask("http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer");
+        var identifyTask = new IdentifyTask("http://services.kgs.ku.edu/arcgis2/rest/services/oilgas/leases/MapServer");
         var identifyParams = new IdentifyParameters();
     	identifyParams.returnGeometry = true;
         identifyParams.tolerance = 3;
@@ -82,19 +85,19 @@
         identifyParams.height = view.height;
         identifyParams.geometry = event.mapPoint;
         identifyParams.mapExtent = view.extent;
+        // identifyParams.layerDefinitions = idDef;
 
         identifyTask.execute(identifyParams).then(function(response) {
             return addPopupTemplate(response.results);
         } ).then(function(feature) {
             // NOTE: filteredFeature is a hack to prevent features that are not part of the sublayer's definitionExpression from being ID'd and appearing in the popup.
-            // In other apps I use identifyParams.layerDefinitions to prevent filtered features from being ID'd in the first place, but this doesn't seem to be a part
-            // of the 4.1 API.
+            // In other 4.1 apps (tremor) I use identifyParams.layerDefinitions to prevent filtered features from being ID'd in the first place, but doesn't work here.
             // TODO: investigate further.
             var filteredFeature = feature.filter(function(el) {
                 return el.attributes.OPERATOR_KID === operatorKid
             } );
 
-            if (feature.length > 0) {
+            if (filteredFeature.length > 0) {
                 view.popup.location = event.mapPoint;
         		view.popup.features = filteredFeature;
         		// view.popup.dockEnabled = true;
