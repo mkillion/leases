@@ -13,6 +13,7 @@
       }
     </style>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://js.arcgis.com/4.1/"></script>
     <link rel="stylesheet" href="https://js.arcgis.com/4.1/esri/css/main.css">
 
@@ -91,22 +92,26 @@
             return addPopupTemplate(response.results);
         } ).then(function(feature) {
             // NOTE: filteredFeature is a hack to prevent features that are not part of the sublayer's definitionExpression from being ID'd and appearing in the popup.
-            // In other 4.1 apps (tremor) I use identifyParams.layerDefinitions to prevent filtered features from being ID'd in the first place, but doesn't work here.
-            // TODO: investigate further.
-            var filteredFeature = feature.filter(function(el) {
-                return el.attributes.OPERATOR_KID === operatorKid
-            } );
+            // In previous apps I used identifyParams.layerDefinitions to prevent filtered features from being ID'd in the first place - doesn't seem to be supported in 4.1.
+            // TODO: investigate further, or wait and see if it returns in the next release.
 
-            if (filteredFeature.length > 0) {
-                view.popup.location = event.mapPoint;
-        		view.popup.features = filteredFeature;
-        		// view.popup.dockEnabled = true;
-        		// view.popup.dockOptions = {
-        		// 	buttonEnabled: false,
-        		// 	position: "bottom-right"
-        		// };
-        		view.popup.visible = true;
-            }
+            $.get('returnLeaseKid.cfm?operator=' + operatorKid + '&year=' + year, function(response) {
+                var arrKids = response.split(",");
+                var filteredFeature = feature.filter(function(el) {
+                    return response.indexOf(el.attributes.KID) > -1;
+                } );
+
+                if (filteredFeature.length > 0) {
+                    view.popup.location = event.mapPoint;
+            		view.popup.features = filteredFeature;
+            		// view.popup.dockEnabled = true;
+            		// view.popup.dockOptions = {
+            		// 	buttonEnabled: false,
+            		// 	position: "bottom-right"
+            		// };
+            		view.popup.visible = true;
+                }
+            } );
         } );
     }
 
@@ -121,7 +126,7 @@
 
             var leasesTemplate = new PopupTemplate( {
                 title: "Lease: {LEASE_NAME}",
-                content: "lease_kid: {LEASE_KID}<br><b>Field:</b> " + fn + "<br><b>Produces Gas:</b> " + pg + "<br><b>Produces Oil:</b> " + po + "<br><b>Producing Formation:</b> " + pf
+                content: "lease_kid: {LEASE_KID}<br>operator_kid: {OPERATOR_KID}<br><b>Field:</b> " + fn + "<br><b>Produces Gas:</b> " + pg + "<br><b>Produces Oil:</b> " + po + "<br><b>Producing Formation:</b> " + pf
             } );
 
             feature.popupTemplate = leasesTemplate;
