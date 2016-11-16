@@ -39,8 +39,6 @@
         defExp = "kid in (select lease_kid from NOMENCLATURE.LEASES_PRODUCTION where operator_kid = " + operatorKid + " and year = " + year + ") and operator_kid = " + operatorKid
     }
 
-    console.log(defExp);
-
     var leasesLayer = new MapImageLayer( {
         url: "http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer",
         visible: true,
@@ -85,12 +83,11 @@
         identifyParams.height = view.height;
         identifyParams.geometry = event.mapPoint;
         identifyParams.mapExtent = view.extent;
-        // identifyParams.layerDefinitions = idDef;
 
         identifyTask.execute(identifyParams).then(function(response) {
             return addPopupTemplate(response.results);
         } ).then(function(feature) {
-            // NOTE: filteredFeature is a hack to prevent features that are not part of the sublayer's definitionExpression from being ID'd and appearing in the popup.
+            // NOTE: filteredFeature is a kludge to prevent features that are not part of the sublayer's definitionExpression from being ID'd and appearing in the popup.
             // In previous apps I used identifyParams.layerDefinitions to prevent filtered features from being ID'd in the first place - doesn't seem to be supported in 4.1.
             // TODO: investigate further, or wait and see if it returns in the next release.
 
