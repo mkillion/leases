@@ -39,8 +39,7 @@
         defExp = "kid in (select lease_kid from NOMENCLATURE.LEASES_PRODUCTION where operator_kid = " + operatorKid + " and year = " + year + ") and operator_kid = " + operatorKid
     }
 
-    // var idDef = [];
-    // idDef = defExp;
+    console.log(defExp);
 
     var leasesLayer = new MapImageLayer( {
         url: "http://services.kgs.ku.edu/arcgis8/rest/services/oilgas/leases/MapServer",
@@ -96,7 +95,6 @@
             // TODO: investigate further, or wait and see if it returns in the next release.
 
             $.get('returnLeaseKid.cfm?operator=' + operatorKid + '&year=' + year, function(response) {
-                var arrKids = response.split(",");
                 var filteredFeature = feature.filter(function(el) {
                     return response.indexOf(el.attributes.KID) > -1;
                 } );
