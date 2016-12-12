@@ -36,8 +36,7 @@
     var defExp = "operator_kid = " + operatorKid;
     if (urlParams.length > 1) {
         var year = urlParams[1].substr(5);
-        // defExp = "kid in (select lease_kid from NOMENCLATURE.LEASES_PRODUCTION where operator_kid = " + operatorKid + " and year = " + year + ") and operator_kid = " + operatorKid;
-        defExp = "kid in (select lease_kid from NOMENCLATURE.LEASES_PRODUCTION where operator_kid = " + operatorKid + " and year = " + year + ")";
+        defExp = "kid in (select lease_kid from nomenclature.leases_production where operator_kid = " + operatorKid + " and year = " + year + ") and operator_kid = " + operatorKid;
     }
 
     var idDef = [];
@@ -136,7 +135,7 @@
 
             var leasesTemplate = new PopupTemplate( {
                 title: "Lease: {LEASE_NAME}",
-                content: "lease_kid: {LEASE_KID}<br>operator_kid: {OPERATOR_KID}<br><b>Field:</b> " + fn + "<br><b>Produces Gas:</b> " + pg + "<br><b>Produces Oil:</b> " + po + "<br><b>Producing Formation:</b> " + pf
+                content: "<b>Field:</b> " + fn + "<br><b>Produces Gas:</b> " + pg + "<br><b>Produces Oil:</b> " + po + "<br><b>Producing Formation:</b> " + pf
             } );
 
             feature.popupTemplate = leasesTemplate;
