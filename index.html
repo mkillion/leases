@@ -33,10 +33,11 @@
 
     var urlParams = location.search.substr(1).split("&");
     var operatorKid = urlParams[0].substr(13);
+
     var defExp = "operator_kid = " + operatorKid;
     if (urlParams.length > 1) {
         var year = urlParams[1].substr(5);
-        defExp = "kid in (select distinct lease_kid from nomenclature.leases_production where operator_kid = " + operatorKid + " and year = " + year + ") and operator_kid = " + operatorKid;
+        defExp = "kid in (select distinct lease_kid from nomenclature.leases_production where operator_kid = " + operatorKid + " and year = " + year + ")";
     }
 
     var idDef = [];
@@ -133,9 +134,15 @@
             var po = (feature.attributes.PRODUCES_OIL === "Null") ? "" : feature.attributes.PRODUCES_OIL;
             var pf = (feature.attributes.PRODUCING_FORMATION === "Null") ? "" : feature.attributes.PRODUCING_FORMATION;
 
+            if (pf !== "") {
+                var pfHtml = "<br><b>Producing Formation:</b> " + pf;
+            } else {
+                var pfHtml = "";
+            }
+
             var leasesTemplate = new PopupTemplate( {
                 title: "Lease: {LEASE_NAME}",
-                content: "<b>Field:</b> " + fn + "<br><b>Produces Gas:</b> " + pg + "<br><b>Produces Oil:</b> " + po + "<br><b>Producing Formation:</b> " + pf
+                content: "<b>Field:</b> " + fn + "<br><b>Produces Gas:</b> " + pg + "<br><b>Produces Oil:</b> " + po + pfHtml
             } );
 
             feature.popupTemplate = leasesTemplate;
